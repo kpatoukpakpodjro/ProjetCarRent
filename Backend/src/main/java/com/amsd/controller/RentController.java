@@ -3,12 +3,11 @@ package com.amsd.controller;
 import com.amsd.model.Car;
 import com.amsd.model.Rent;
 import com.amsd.model.User;
-import com.amsd.repository.CarRepository;
-import com.amsd.repository.RentRepository;
-import com.amsd.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import com.amsd.service.JsonDataService;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -17,62 +16,85 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/rents")
 class RentController {
+
     @Autowired
-    private RentRepository rentRepository;
-    @Autowired
-    private CarRepository carRepository;
-    @Autowired
-    private UserRepository userRepository;
+    private JsonDataService jsonDataService; // Service pour gérer les données JSON
 
     @PostMapping("/rent")
-    public Rent rentCar(@RequestParam Long carId, @RequestParam Long userId ) {
-        Optional<Car> carOpt = carRepository.findById(carId);
-        Optional<User> user = userRepository.findById(userId);
-        if (carOpt.isPresent() && !carOpt.get().isRented()) {
+    public Rent rentCar(@RequestParam Long carId, @RequestParam Long userId) throws Exception {
+        List<Car> cars = jsonDataService.getAllCars();
+        List<User> users = jsonDataService.getAllUsers();
+        
+        // Trouver la voiture et l'utilisateur par ID
+        Optional<Car> carOpt = cars.stream().filter(car -> car.getId().equals(carId)).findFirst();
+        Optional<User> userOpt = users.stream().filter(user -> user.getId().equals(userId)).findFirst();
+
+        if (carOpt.isPresent() && userOpt.isPresent() && !carOpt.get().isRented()) {
             Car car = carOpt.get();
+            User user = userOpt.get();
             car.setRented(true);
-            carRepository.save(car);
+            jsonDataService.saveCar(car);  // Sauvegarder la voiture après modification
 
             LocalDate beginDate = LocalDate.now();
-            Rent rent = new Rent(null, car, user.get(), beginDate, null);
-            return rentRepository.save(rent);
+            Rent rent = new Rent(car, user, beginDate, null);
+            jsonDataService.saveRent(rent);  // Sauvegarder la location dans le fichier JSON
+            return rent;
         }
+
         throw new RuntimeException("Car not available for rent");
     }
 
     @PostMapping("/return")
-    public void returnCar(@RequestParam Long carId) {
-        Optional<Car> carOpt = carRepository.findById(carId);
+    public void returnCar(@RequestParam Long carId) throws Exception {
+        List<Car> cars = jsonDataService.getAllCars();
+        List<Rent> rents = jsonDataService.getAllRents();
 
+        Optional<Car> carOpt = cars.stream().filter(car -> car.getId().equals(carId)).findFirst();
         if (carOpt.isPresent() && carOpt.get().isRented()) {
             Car car = carOpt.get();
             car.setRented(false);
-            carRepository.save(car);
-            Optional<Rent> rentOpt = rentRepository.findActiveRentByCarId(carId);
+            jsonDataService.saveCar(car);  // Sauvegarder la voiture après modification
+
+            Optional<Rent> rentOpt = rents.stream().filter(rent -> rent.getCar().getId().equals(carId) && rent.getEndDate() == null).findFirst();
             if (rentOpt.isPresent()) {
                 Rent rent = rentOpt.get();
                 rent.setEndDate(LocalDate.now());
-                rentRepository.save(rent);
+                rent.setCar(car);
+                jsonDataService.saveRent(rent);  // Sauvegarder la location après modification
             }
         } else {
             throw new RuntimeException("Car is not rented");
         }
     }
+
     @GetMapping("/myrents")
-    public List<Car> getMyRentedCars(@RequestParam Long userId) {
-        // Récupérer l'utilisateur
-        Optional<User> user = userRepository.findById(userId);
+    public List<Rent> getMyRentedCars(@RequestParam Long userId, @RequestParam(required = false) Boolean returned) {
+        try {
+            Optional<User> userOpt = jsonDataService.getUserById(userId);
+            if (userOpt.isEmpty()) {
+                throw new RuntimeException("User not found");
+            }
 
-        // Récupérer les locations de cet utilisateur
-        List<Rent> userRents = rentRepository.findByUserId(user.get().getId());
+            List<Rent> userRents = jsonDataService.getAllRents()
+                    .stream()
+                    .filter(rent -> rent.getUser().getId().equals(userId))
+                    .collect(Collectors.toList());
 
-        // Extraire les voitures louées
-        return userRents.stream().map(Rent::getCar).collect(Collectors.toList());
+            if (returned != null) {
+                userRents = userRents.stream()
+                        .filter(rent -> (returned ? rent.getEndDate() != null : rent.getEndDate() == null))
+                        .collect(Collectors.toList());
+            }
+
+            return userRents;
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading rent data", e);
+        }
     }
+
 
     @GetMapping
-    public List<Rent> getAllRents() {
-        return rentRepository.findAll();
+    public List<Rent> getAllRents() throws Exception {
+        return jsonDataService.getAllRents();
     }
 }
-

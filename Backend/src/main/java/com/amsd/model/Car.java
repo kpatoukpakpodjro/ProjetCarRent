@@ -1,30 +1,25 @@
 package com.amsd.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-@Entity
-@Table(name = "cars")
-public class Car {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class Car implements HasId{
+    private static long carCounter = 0;
     private Long id;
     private String plateNumber;
     private int price;
     private boolean rented;
 
-    public Car() {}
+    // Constructeurs
+    public Car() {
+        this.id = ++carCounter;
+    }
 
-    public Car(Long id, String plateNumber, int price, boolean rented) {
-        this.id = id;
+    public Car( String plateNumber, int price, boolean rented) {
+        this.id = ++carCounter;
         this.plateNumber = plateNumber;
         this.price = price;
         this.rented = rented;
     }
 
+    // Getters et setters
     public Long getId() { return id; }
     public String getPlateNumber() { return plateNumber; }
     public int getPrice() { return price; }
@@ -34,4 +29,8 @@ public class Car {
     public void setPlateNumber(String plateNumber) { this.plateNumber = plateNumber; }
     public void setPrice(int price) { this.price = price; }
     public void setRented(boolean rented) { this.rented = rented; }
+
+    public static void setCarCounter(long value) {
+        carCounter = value;
+    }
 }

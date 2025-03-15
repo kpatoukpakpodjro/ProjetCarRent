@@ -1,56 +1,55 @@
 package com.amsd.model;
 
-import jakarta.persistence.*;
 import java.time.temporal.ChronoUnit;
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "rents")
-public class Rent {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class Rent implements HasId{
+
     private Long id;
-
-    @ManyToOne
-    @JoinColumn(name = "car_id")
     private Car car;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
     private User user;
-
+    private static long rentCounter = 0;
     private LocalDate beginDate;
     private LocalDate endDate;
     private float invoice;
-    public Rent() {}
 
-    public Rent(Long id, Car car, User user, LocalDate beginDate, LocalDate endDate) {
-        this.id = id;
+    // Constructeur sans arguments (obligatoire pour la désérialisation)
+    public Rent() {
+        this.id = ++rentCounter;
+    }
+
+    public Rent( Car car, User user, LocalDate beginDate, LocalDate endDate) {
+        this.id = ++rentCounter;
         this.car = car;
         this.user = user;
         this.beginDate = beginDate;
         this.endDate = endDate;
         this.invoice = 0;
     }
-    // Getters
+
+    // Getters et Setters
     public Long getId() { return id; }
     public Car getCar() { return car; }
     public User getUser() { return user; }
     public LocalDate getBeginDate() { return beginDate; }
     public LocalDate getEndDate() { return endDate; }
-    public float getInvoice() {return invoice;}
+    public float getInvoice() { return invoice; }
 
-    // Setters
     public void setId(Long id) { this.id = id; }
     public void setCar(Car car) { this.car = car; }
     public void setUser(User user) { this.user = user; }
     public void setBeginDate(LocalDate beginDate) { this.beginDate = beginDate; }
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
-        // Calcul du montant total de la location
-        Long daysBetween = ChronoUnit.DAYS.between(this.endDate, this.beginDate); // Durée en jour de la location
-            daysBetween = daysBetween +1;
-        this.invoice = daysBetween * this.car.getPrice();
+        if (this.beginDate != null && this.endDate != null) {
+            Long daysBetween = ChronoUnit.DAYS.between(this.endDate, this.beginDate);
+            daysBetween = daysBetween + 1;
+            this.invoice = daysBetween * this.car.getPrice();
         }
-    public void setInvoice( float invoice){ this.invoice = invoice;}
+    }
+    public void setInvoice(float invoice) { this.invoice = invoice; }
+
+    public static void setRentCounter(long value) {
+        rentCounter = value;
+    }
 }

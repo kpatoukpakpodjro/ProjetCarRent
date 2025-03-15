@@ -11,22 +11,58 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class JsonDataService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private final String usersFilePath = "src/main/resources/data/users.json";
-    private final String carsFilePath = "src/main/resources/data/cars.json";
-    private final String rentsFilePath = "src/main/resources/data/rents.json";
+    //private final String usersFilePath = "src/main/resources/data/users.json";
+    //private final String carsFilePath = "src/main/resources/data/cars.json";
+    //private final String rentsFilePath = "src/main/resources/data/rents.json";
+    private List<User> users = new ArrayList<>();
+    private List<Car> cars = new ArrayList<>();
+    private List<Rent> rents = new ArrayList<>();
 
     public JsonDataService() {
         objectMapper.registerModule(new JavaTimeModule()); // Enregistrement du module
         initializeCounters();
+        initializeData();
+    }
+    // 🟢 Initialisation des données utilisateurs et voitures
+    private void initializeData() {
+        // Initialisation des utilisateurs
+        users.add(new User("john_doe", "john.doe@example.com", "USER"));
+        users.add(new User("admin", "admin@example.com", "ADMIN"));
+        users.add(new User("kkpodjro", "alice@example.com", "USER"));
+        users.add(new User("wpaty", "bob@example.com", "USER"));
+
+        // Initialisation des voitures
+        cars.add(new Car("ABC123", 50, false));
+        cars.add(new Car("XYZ456", 60, false));
+        cars.add(new Car("ABC1234", 50, false));
+        cars.add(new Car("XYZ5678", 60, false));
+        cars.add(new Car("DEF2468", 70, false));
+        cars.add(new Car("GHI1357", 55, false));
+        cars.add(new Car("JKL456", 60, false));
+        cars.add(new Car("MNO789", 80, false));
+        cars.add(new Car("PQR123", 100, false));
+        cars.add(new Car( "STU987", 75, false));
+        cars.add(new Car( "VWX654", 90, false));
+        cars.add(new Car( "YZA321", 110, false));
+        cars.add(new Car( "BCD852", 95, false));
+        cars.add(new Car( "EFG741", 70, false));
+        cars.add(new Car( "HIJ258", 85, false));
+        cars.add(new Car( "KLM369", 95, false));
+        cars.add(new Car( "NOP852", 65, false));
+        cars.add(new Car( "QRS987", 120, false));
+        cars.add(new Car( "TUV654", 130, false));
+        cars.add(new Car( "WXY321", 140, false));
+        cars.add(new Car( "ZAB159", 100, false));
+        cars.add(new Car( "CDE357", 110, false));
     }
     // 🟢 Charger les ID existants et initialiser les compteurs
     private void initializeCounters() {
@@ -45,7 +81,7 @@ public class JsonDataService {
 
     // Méthodes pour User
     public List<User> getAllUsers() throws IOException {
-        return objectMapper.readValue(new File(usersFilePath), new TypeReference<List<User>>() {});
+        return users; //objectMapper.readValue(new File(usersFilePath), new TypeReference<List<User>>() {});
     }
 
     public Optional<User> getUserById(Long id) throws IOException {
@@ -56,12 +92,12 @@ public class JsonDataService {
     public void saveUser(User user) throws IOException {
         List<User> users = getAllUsers();
         users.add(user);
-        objectMapper.writeValue(new File(usersFilePath), users);
+        //objectMapper.writeValue(new File(usersFilePath), users);
     }
 
     // Méthodes pour Car
     public List<Car> getAllCars() throws IOException {
-        return objectMapper.readValue(new File(carsFilePath), new TypeReference<List<Car>>() {});
+        return cars; //objectMapper.readValue(new File(carsFilePath), new TypeReference<List<Car>>() {});
     }
 
     public void saveCar(Car car) throws IOException {
@@ -74,12 +110,12 @@ public class JsonDataService {
                 break;
             }
         }
-        objectMapper.writeValue(new File(carsFilePath), cars);
+        //objectMapper.writeValue(new File(carsFilePath), cars);
     }
 
     // Méthodes pour Rent
     public List<Rent> getAllRents() throws IOException {
-        return objectMapper.readValue(new File(rentsFilePath), new TypeReference<List<Rent>>() {});
+        return rents; //objectMapper.readValue(new File(rentsFilePath), new TypeReference<List<Rent>>() {});
     }
 
     public void saveRent(Rent rent) throws IOException {
@@ -96,10 +132,11 @@ public class JsonDataService {
             rentToUpdate.setEndDate(rent.getEndDate()); // Met à jour la date de fin
             rentToUpdate.setInvoice(rent.getInvoice()); // Met à jour la facture (si nécessaire)
             rentToAdd = rentToUpdate;
+            rents.remove(existingRent.get());
         }
         rents.add(rentToAdd);
 
         // Sauvegarde les changements dans le fichier JSON
-        objectMapper.writeValue(new File(rentsFilePath), rents);
+        //objectMapper.writeValue(new File(rentsFilePath), rents);
     }
 }

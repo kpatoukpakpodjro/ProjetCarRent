@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: Backend
+    version: "1.0"
+  name: Backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: Backend
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: Backend
+    spec:
+      containers:
+        - name: Backend
+          image: kpatoukpakpodjro/Backend:1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          resources: {}
+      restartPolicy: Always
+status: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: Backend
+  name: Backend
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+      name: http
+  selector:
+    app: Backend
+  type: LoadBalancer
+status:
+  loadBalancer: {}

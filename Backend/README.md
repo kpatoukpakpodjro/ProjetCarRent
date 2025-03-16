@@ -3,9 +3,21 @@
 - Coder une mini application dans le langage que vous voulez
    Programme Java pour la gestion de location de voiture.
    Nous avions 2 entités en MCD(Modèle Conceptuel de Données) : User, Car de relation ManyToMany.
-   Ce qui vous fait 3 classes au passage en MLD : User, Car, Rent
+  Un client peut louer plusieurs voitures et une voiture peut être louée plusieurs clients
+  ( à différentes dates)
+   Ce qui nous fait 3 classes au passage en MLD : User, Car, Rent
    Les données (iniatiles) sont stockées dans des fichiers json ( chemins relatifs)
-   La classe JsonDataService permet de gérer la relation entre les entités
+   La classe JsonDataService permet de gérer la relation entre les entités et d'enregistrer
+    les modifications apportées.
+    # Fonctionnalités développées
+        - consulter les voitures disponibles : /cars/available
+        - trier les voitures disponibles par prix ( Attribut price) : /cars/available?sort=price
+        - louer une voiture : /rents/rent
+        - consulter les voitures qu'il a louées : myrents?userId=2
+                                        : celles retournées : myrents?userId=2&returned=true
+                                        : celles non encore retournées : myrents?userId=2&returned=false
+        - rendre une voiture : /rents/return
+
    
 - Créer une image Docker => faire un Dockerfile
    

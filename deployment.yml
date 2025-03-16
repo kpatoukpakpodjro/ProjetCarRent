@@ -18,8 +18,8 @@ spec:
         app: Backend
     spec:
       containers:
-        - name: Backend
-          image: kkpodjro/Backend:1
+        - name: backend
+          image: kkpodjro/backend:last
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
